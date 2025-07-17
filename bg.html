@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PixZen Edits - AI Background Remover</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #4361ee;
+      --secondary: #3a0ca3;
+      --accent: #4895ef;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --success: #4cc9f0;
+      --error: #f72585;
+      --warning: #f8961e;
+      --gray: #6c757d;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: #f5f7fb;
+      color: var(--dark);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      opacity: 0.9;
+      font-weight: 300;
+      font-size: 1.1rem;
+    }
+
+    .main-content {
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    /* Upload Section */
+    .upload-section {
+      border: 2px dashed var(--gray);
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: rgba(108, 117, 125, 0.05);
+    }
+
+    .upload-section:hover {
+      border-color: var(--primary);
+      background: rgba(67, 97, 238, 0.05);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+      color: var(--primary);
+    }
+
+    .upload-text {
+      font-size: 1.2rem;
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+
+    .upload-hint {
+      color: var(--gray);
+      font-size: 0.95rem;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .file-info {
+      margin-top: 15px;
+      font-size: 0.9rem;
+      color: var(--gray);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .file-info i {
+      cursor: pointer;
+      color: var(--error);
+    }
+
+    /* Settings Section */
+    .settings {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+      color: var(--secondary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title i {
+      font-size: 1.2rem;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+    }
+
+    .option-card {
+      border: 2px solid #e9ecef;
+      border-radius: 10px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .option-card:hover {
+      border-color: var(--primary);
+      box-shadow: 0 5px 15px rgba(67, 97, 238, 0.1);
+    }
+
+    .option-card.active {
+      border-color: var(--primary);
+      background: rgba(67, 97, 238, 0.05);
+    }
+
+    .option-icon {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      color: var(--primary);
+    }
+
+    .option-name {
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+
+    .option-desc {
+      font-size: 0.85rem;
+      color: var(--gray);
+    }
+
+    /* Color Picker */
+    .color-picker-container {
+      margin-top: 20px;
+      display: none;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .color-label {
+      font-weight: 500;
+    }
+
+    #bgColor {
+      width: 60px;
+      height: 60px;
+      border: 3px solid #e9ecef;
+      border-radius: 10px;
+      cursor: pointer;
+      padding: 3px;
+      background: white;
+    }
+
+    /* Background Image Upload */
+    .bg-image-container {
+      margin-top: 20px;
+      display: none;
+    }
+
+    .bg-image-upload {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .bg-image-preview {
+      width: 100%;
+      max-height: 150px;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 2px dashed #e9ecef;
+      display: none;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: var(--primary);
+      color: white;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(67, 97, 238, 0.2);
+    }
+
+    .btn:hover {
+      background: var(--secondary);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(67, 97, 238, 0.25);
+    }
+
+    .btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      background: var(--gray);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--primary);
+      color: var(--primary);
+      box-shadow: none;
+    }
+
+    .btn-outline:hover {
+      background: rgba(67, 97, 238, 0.1);
+    }
+
+    /* Processing Section */
+    .processing-section {
+      text-align: center;
+      padding: 30px;
+      display: none;
+    }
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 5px solid rgba(67, 97, 238, 0.1);
+      border-radius: 50%;
+      border-top-color: var(--primary);
+      margin: 0 auto 20px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .progress-text {
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+
+    .progress-time {
+      color: var(--gray);
+      font-size: 0.9rem;
+    }
+
+    /* Results Section */
+    .results-section {
+      display: none;
+    }
+
+    .results-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    @media (max-width: 768px) {
+      .results-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .result-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .result-title {
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+      color: var(--secondary);
+      text-align: center;
+    }
+
+    .image-preview {
+      max-width: 100%;
+      max-height: 400px;
+      width: auto;
+      height: auto;
+      border-radius: 10px;
+      display: block;
+      margin: 0 auto;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Error Message */
+    .error-message {
+      color: var(--error);
+      text-align: center;
+      padding: 15px;
+      border-radius: 8px;
+      background-color: rgba(247, 37, 133, 0.1);
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: var(--gray);
+      font-size: 0.9rem;
+      margin-top: 30px;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 576px) {
+      header {
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .main-content {
+        padding: 20px;
+      }
+      
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>PixZen Edits</h1>
+      <p class="subtitle">Professional AI Background Remover</p>
+    </header>
+
+    <div class="main-content">
+      <!-- Upload Section -->
+      <div class="upload-section" id="uploadArea">
+        <div class="upload-icon">
+          <i class="fas fa-cloud-upload-alt"></i>
+        </div>
+        <p class="upload-text">Click to upload your image</p>
+        <p class="upload-hint">Supports JPG, PNG, WEBP (Max 15MB)</p>
+        <input type="file" id="fileInput" accept="image/jpeg, image/png, image/webp">
+      </div>
+      <div id="fileInfo" class="file-info"></div>
+
+      <!-- Error Message -->
+      <div class="error-message" id="errorMessage"></div>
+
+      <!-- Settings Section -->
+      <div class="settings">
+        <h3 class="section-title"><i class="fas fa-sliders-h"></i> Background Settings</h3>
+        
+        <div class="options-grid">
+          <!-- Transparent Option -->
+          <div class="option-card active" data-option="transparent">
+            <div class="option-icon">
+              <i class="fas fa-border-none"></i>
+            </div>
+            <h4 class="option-name">Transparent</h4>
+            <p class="option-desc">Remove background completely</p>
+          </div>
+          
+          <!-- Solid Color Option -->
+          <div class="option-card" data-option="solid">
+            <div class="option-icon">
+              <i class="fas fa-fill-drip"></i>
+            </div>
+            <h4 class="option-name">Solid Color</h4>
+            <p class="option-desc">Replace with a color</p>
+          </div>
+          
+          <!-- Custom Image Option -->
+          <div class="option-card" data-option="image">
+            <div class="option-icon">
+              <i class="fas fa-image"></i>
+            </div>
+            <h4 class="option-name">Custom Image</h4>
+            <p class="option-desc">Use your own background</p>
+          </div>
+        </div>
+        
+        <!-- Color Picker (shown when solid color selected) -->
+        <div class="color-picker-container" id="colorPickerContainer">
+          <span class="color-label">Select Color:</span>
+          <input type="color" id="bgColor" value="#FFFFFF">
+          <span id="colorHex">#FFFFFF</span>
+        </div>
+        
+        <!-- Background Image Upload (shown when custom image selected) -->
+        <div class="bg-image-container" id="bgImageContainer">
+          <div class="bg-image-upload">
+            <button class="btn btn-outline" id="bgImageBtn">
+              <i class="fas fa-upload"></i> Upload Background Image
+            </button>
+            <input type="file" id="bgImageFile" accept="image/jpeg, image/png, image/webp" style="display: none;">
+            <img id="bgImagePreview" class="bg-image-preview" alt="Background Preview">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button class="btn" id="processBtn" disabled>
+          <i class="fas fa-magic"></i> Remove Background Now
+        </button>
+      </div>
+      
+      <!-- Processing Section -->
+      <div class="processing-section" id="processingSection">
+        <div class="spinner"></div>
+        <p class="progress-text">Processing your image...</p>
+        <p class="progress-time">This usually takes 1-2 minutes</p>
+      </div>
+      
+      <!-- Results Section -->
+      <div class="results-section" id="resultsSection">
+        <div class="results-container">
+          <div class="result-card">
+            <h4 class="result-title">Original Image</h4>
+            <img id="originalImage" class="image-preview" src="" alt="Original Image">
+          </div>
+          <div class="result-card">
+            <h4 class="result-title">Result</h4>
+            <img id="resultImage" class="image-preview" src="" alt="Result Image">
+          </div>
+        </div>
+        
+        <div class="action-buttons">
+          <button class="btn" id="downloadBtn">
+            <i class="fas fa-download"></i> Download Result
+          </button>
+          <button class="btn btn-outline" id="newImageBtn">
+            <i class="fas fa-redo"></i> Process Another Image
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <footer>
+      <p>© <span id="year"></span> PixZen Edits | AI Background Removal Tool</p>
+    </footer>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // DOM elements
+      const uploadArea = document.getElementById('uploadArea');
+      const fileInput = document.getElementById('fileInput');
+      const fileInfo = document.getElementById('fileInfo');
+      const processBtn = document.getElementById('processBtn');
+      const processingSection = document.getElementById('processingSection');
+      const resultsSection = document.getElementById('resultsSection');
+      const originalImage = document.getElementById('originalImage');
+      const resultImage = document.getElementById('resultImage');
+      const downloadBtn = document.getElementById('downloadBtn');
+      const newImageBtn = document.getElementById('newImageBtn');
+      const errorMessage = document.getElementById('errorMessage');
+      const optionCards = document.querySelectorAll('.option-card');
+      const colorPickerContainer = document.getElementById('colorPickerContainer');
+      const bgColorInput = document.getElementById('bgColor');
+      const colorHex = document.getElementById('colorHex');
+      const bgImageContainer = document.getElementById('bgImageContainer');
+      const bgImageBtn = document.getElementById('bgImageBtn');
+      const bgImageFile = document.getElementById('bgImageFile');
+      const bgImagePreview = document.getElementById('bgImagePreview');
+      
+      // Current state
+      let currentFile = null;
+      let resultImageUrl = null;
+      let selectedOption = 'transparent';
+      
+      // Set current year
+      document.getElementById('year').textContent = new Date().getFullYear();
+      
+      // Event listeners
+      uploadArea.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', handleFileSelect);
+      processBtn.addEventListener('click', processImage);
+      downloadBtn.addEventListener('click', downloadResult);
+      newImageBtn.addEventListener('click', resetTool);
+      bgColorInput.addEventListener('input', updateColorHex);
+      bgImageBtn.addEventListener('click', () => bgImageFile.click());
+      bgImageFile.addEventListener('change', handleBgImageSelect);
+      
+      // Option selection
+      optionCards.forEach(card => {
+        card.addEventListener('click', function() {
+          // Update active state
+          optionCards.forEach(c => c.classList.remove('active'));
+          this.classList.add('active');
+          
+          // Update selected option
+          selectedOption = this.dataset.option;
+          
+          // Show/hide additional options
+          colorPickerContainer.style.display = selectedOption === 'solid' ? 'flex' : 'none';
+          bgImageContainer.style.display = selectedOption === 'image' ? 'block' : 'none';
+        });
+      });
+      
+      // Handle file selection
+      function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        // Validate file type
+        const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+          showError('Please select a valid image file (JPEG, PNG, or WEBP)');
+          return;
+        }
+        
+        // Validate file size (15MB max)
+        const maxSize = 15 * 1024 * 1024;
+        if (file.size > maxSize) {
+          showError('File size should not exceed 15MB');
+          return;
+        }
+        
+        currentFile = file;
+        clearError();
+        
+        // Display file info
+        fileInfo.innerHTML = `
+          <span>${file.name} (${formatFileSize(file.size)})</span>
+          <i class="fas fa-times" id="removeFile"></i>
+        `;
+        
+        document.getElementById('removeFile').addEventListener('click', function(e) {
+          e.stopPropagation();
+          resetFile();
+        });
+        
+        // Display the selected image
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          originalImage.src = e.target.result;
+          processBtn.disabled = false;
+        };
+        reader.readAsDataURL(file);
+      }
+      
+      // Handle background image selection
+      function handleBgImageSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        // Validate file type
+        const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+          showError('Please select a valid background image (JPEG, PNG, or WEBP)');
+          return;
+        }
+        
+        // Display the selected image
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          bgImagePreview.src = e.target.result;
+          bgImagePreview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+      
+      // Process the image
+      async function processImage() {
+        if (!currentFile) {
+          showError('Please upload an image first');
+          return;
+        }
+        
+        // Validate background image if needed
+        if (selectedOption === 'image' && !bgImageFile.files[0]) {
+          showError('Please upload a background image');
+          return;
+        }
+        
+        // Show processing state
+        processingSection.style.display = 'block';
+        resultsSection.style.display = 'none';
+        processBtn.disabled = true;
+        clearError();
+        
+        // Prepare form data
+        const formData = new FormData();
+        formData.append('image', currentFile);
+        formData.append('background_type', selectedOption);
+        
+        if (selectedOption === 'solid') {
+          formData.append('background_color', bgColorInput.value);
+        } else if (selectedOption === 'image') {
+          formData.append('background_image', bgImageFile.files[0]);
+        }
+        
+        try {
+          const response = await fetch('https://background-api-xe4t.onrender.com/remove-background', {
+            method: 'POST',
+            body: formData
+          });
+          
+          if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: 'Failed to process image' }));
+            throw new Error(error.message || 'Failed to process image');
+          }
+          
+          const blob = await response.blob();
+          resultImageUrl = URL.createObjectURL(blob);
+          resultImage.src = resultImageUrl;
+          
+          // Show results
+          processingSection.style.display = 'none';
+          resultsSection.style.display = 'block';
+        } catch (error) {
+          console.error('Error:', error);
+          showError(error.message || 'Failed to process image. Please try again.');
+          processingSection.style.display = 'none';
+          processBtn.disabled = false;
+        }
+      }
+      
+      // Download the result
+      function downloadResult() {
+        if (!resultImageUrl) return;
+        
+        const link = document.createElement('a');
+        link.href = resultImageUrl;
+        link.download = currentFile ? 
+          `pixzen-${currentFile.name.replace(/\.[^/.]+$/, '.png')}` : 
+          'pixzen-background-removed.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      
+      // Reset file selection
+      function resetFile() {
+        fileInput.value = '';
+        originalImage.src = '';
+        fileInfo.textContent = '';
+        currentFile = null;
+        processBtn.disabled = true;
+      }
+      
+      // Reset the entire tool
+      function resetTool() {
+        resetFile();
+        
+        if (resultImageUrl) {
+          URL.revokeObjectURL(resultImageUrl);
+        }
+        
+        resultImageUrl = null;
+        resultImage.src = '';
+        resultsSection.style.display = 'none';
+        processingSection.style.display = 'none';
+        
+        // Reset background options
+        optionCards.forEach(card => card.classList.remove('active'));
+        document.querySelector('.option-card[data-option="transparent"]').classList.add('active');
+        selectedOption = 'transparent';
+        colorPickerContainer.style.display = 'none';
+        bgImageContainer.style.display = 'none';
+        bgImageFile.value = '';
+        bgImagePreview.src = '';
+        bgImagePreview.style.display = 'none';
+      }
+      
+      // Update color hex display
+      function updateColorHex() {
+        colorHex.textContent = bgColorInput.value;
+      }
+      
+      // Show error message
+      function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+      }
+      
+      // Clear error message
+      function clearError() {
+        errorMessage.style.display = 'none';
+      }
+      
+      // Format file size
+      function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      }
+    });
+  </script>
+</body>
+</html>
